@@ -1,0 +1,17 @@
+Variable,Base,Min,Max,Tuning_Notes
+Player_Base_HP,100,60,160,Scales with meta-progression; tutorial beat locked at 100 no-damage
+Move_Speed_units_per_s,4.0,3.0,5.5,Touch drag feel; [PLACEHOLDER] test one-thumb comfort
+Attack_Interval_s,0.45,0.30,0.70,Affects DPS and pacing
+Dash_I-frames_s,0.30,0.15,0.50,Key feel-test variable
+Dash_Cooldown_s,1.20,0.80,2.00,Too short = no risk
+Hit_stop_s,0.06,0.03,0.12,Impact feel strength
+Enemy_Contact_Damage,12,5,25,[PLACEHOLDER] scale +15% per floor
+Enemy_HP_L1,30,15,60,Scales +15% per floor
+Shard_Drop_per_Kill,5,2,12,In-run economy
+Shop_Heal_Cost_shards,20,10,40,Shard sink
+Echo_per_Depth,10,,,"x depth; first-clear bonus +15"
+Echo_per_New_Discovery,25,,,[PLACEHOLDER] incentivize exploration
+Hidden_Density_per_Floor,3,1,6,Exploration pillar core; [PLACEHOLDER] target >=1 unknown/min
+Secret_Door_Chance,0.35,0.15,0.60,Branching choice
+Risky_Path_Enemy_Mult,1.4,1.1,2.0,Curiosity vs risk
+Run_Length_Floors,15,8,25,Target session 5-30 min

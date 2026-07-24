@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f1a" />
+  <title>深窟回声 · Deep Echo</title>
+  <link rel="stylesheet" href="src/style.css" />
+</head>
+<body>
+  <div id="app">
+    <canvas id="game"></canvas>
+    <div id="dangerVig"></div>
+
+    <!-- 主题切换 -->
+    <button id="themeToggle" class="theme-toggle" aria-label="切换主题">🌙</button>
+
+    <!-- 游戏内 HUD -->
+    <div id="hud">
+      <div class="hud-top">
+        <div id="hpWrap" class="hp-wrap"><div id="hpFill" class="hp-fill"></div></div>
+        <div id="chipFloor" class="hud-chip">层 1</div>
+        <div id="chipClass" class="hud-chip">身影</div>
+        <div id="chipEcho" class="hud-chip"><span class="echo">◈ 0</span></div>
+        <div id="chipShards" class="hud-chip">◆ 0</div>
+      </div>
+      <div id="bossBar" class="boss-bar">
+        <div id="bossName" class="boss-name">深窟守卫</div>
+        <div class="boss-track"><div id="bossFill" class="boss-fill"></div></div>
+      </div>
+      <div id="relicBar" class="relic-bar"></div>
+      <div id="hint" class="hint">左半屏拖动移动 · 右半屏点击攻击 / 滑动闪避 · 闪避瞬间精准顶招触发完美闪避</div>
+      <button id="abilityBtn" class="ability-btn">✦</button>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <!-- 主菜单 -->
+    <div id="menu" class="overlay show">
+      <h1 class="title">深窟回声</h1>
+      <p class="subtitle">手机动作 Roguelike · 在战斗中探索,在探索中发现。<br/>拾起的遗物没有说明——靠你自己试出它的秘密。</p>
+      <button id="btnStart" class="btn">开始下潜</button>
+      <button id="btnDaily" class="btn ghost">每日种子</button>
+      <div style="display:flex;margin-top:6px">
+        <button id="btnCodex" class="btn ghost">图鉴</button>
+        <button id="btnUnlock" class="btn ghost">强化</button>
+      </div>
+      <p class="controls-help" style="margin-top:10px">
+        <b>触屏</b>:左半屏拖动=移动,右半屏点击=攻击,右半屏滑动=闪避<br/>
+        <b>桌面</b>:WASD 移动,J 攻击,K 闪避<br/>
+        <b>目标</b>:下潜到底,攻击墙壁找隐藏,暗门后藏着秘密
+      </p>
+    </div>
+
+    <!-- 选角界面(数据驱动职业卡片) -->
+    <!-- 按钮必须作为 .overlay 直接子元素(避开 backdrop-filter 吞点击,同祭坛修复) -->
+    <div id="select" class="overlay">
+      <h1 class="title" style="font-size:34px">选择你的身影</h1>
+      <p class="subtitle">每种职业手感迥异 —— 选一个,开始下潜。</p>
+      <div id="classList" class="class-grid"></div>
+      <button id="btnConfirmSelect" class="btn gold">确认下潜</button>
+      <button id="btnSelectBack" class="btn ghost">返回</button>
+    </div>
+
+    <!-- 死亡 / 通关 -->
+    <div id="death" class="overlay">
+      <h1 id="deathTitle" class="title">陨落</h1>
+      <div class="card"><div id="deathStats"></div></div>
+      <button id="btnRetry" class="btn gold">再来一局</button>
+      <button id="btnMenu" class="btn ghost">返回菜单</button>
+    </div>
+
+    <!-- 图鉴 -->
+    <div id="codex" class="overlay">
+      <h1 class="title" style="font-size:34px">图鉴</h1>
+      <div id="codexProgress" class="subtitle">图鉴 0/7</div>
+      <div class="card"><div id="codexGrid" class="codex-grid"></div></div>
+      <button id="btnCodexBack" class="btn ghost">返回</button>
+    </div>
+
+    <!-- 强化(元进度解锁) -->
+    <div id="unlock" class="overlay">
+      <h1 class="title" style="font-size:34px">强化</h1>
+      <p class="subtitle">用回响永久强化。失败不归零,越挖越懂这座窟。</p>
+      <div class="card"><div id="unlockStats"></div></div>
+      <button id="btnBuyHp" class="btn">强化生命</button>
+      <button id="btnUnlockBack" class="btn ghost">返回</button>
+    </div>
+
+    <!-- 祭坛抉择(风险 vs 收益) -->
+    <!-- 注意:按钮必须作为 .overlay 的直接子元素,不能放进带 backdrop-filter 的 .card
+         内(iOS Safari 等移动端会因祖先 backdrop-filter 吞掉子按钮的 click/touch 事件) -->
+    <div id="shrine" class="overlay">
+      <h1 class="title" style="font-size:32px;color:#fbbf24">古老祭坛</h1>
+      <p class="subtitle">它在低语。你可以献上什么,又想得到什么?</p>
+      <div class="card shrine-card">
+        <p style="margin:0;color:var(--text-dim);font-size:14px;line-height:1.6">
+          三选一,抉择将不可逆。<br/>献祭以血换遗物,祈祷以命换回响,或转身离去。
+        </p>
+      </div>
+      <button id="btnShrineSacrifice" class="btn warn">献祭 25 生命 → 换取未知遗物</button>
+      <button id="btnShrinePray" class="btn">祈祷 → 失去 10 生命,换取回响</button>
+      <button id="btnShrineLeave" class="btn ghost">转身离开</button>
+    </div>
+  </div>
+
+  <script src="src/config.js"></script>
+  <script src="src/meta.js"></script>
+  <script src="src/input.js"></script>
+  <script src="src/world.js"></script>
+  <script src="src/entities.js"></script>
+  <script src="src/relics.js"></script>
+  <script src="src/game.js"></script>
+</body>
+</html>
